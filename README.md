@@ -1,2 +1,2 @@
 # helm-eks-autoscaler
-Test 1
+Test
