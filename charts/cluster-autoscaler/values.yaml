@@ -14,10 +14,10 @@ autoDiscovery:
   # Enable autodiscovery for `cloudProvider=clusterapi`, for groups matching `autoDiscovery.labels`.
   # Enable autodiscovery for `cloudProvider=gce`, but no MIG tagging required.
   # Enable autodiscovery for `cloudProvider=magnum`, for groups matching `autoDiscovery.roles`.
-  clusterName:  # cluster.local
+  clusterName:  csye7125-cluster
 
   # autoDiscovery.namespace -- Enable autodiscovery via cluster namespace for for `cloudProvider=clusterapi`
-  namespace:  # default
+  namespace:  ns4
 
   # autoDiscovery.tags -- ASG tags to match, run through `tpl`.
   tags:
@@ -302,22 +302,11 @@ prometheusRule:
   rules: []
 
 rbac:
-  # rbac.create -- If `true`, create and use RBAC resources.
-  create: true
-  # rbac.pspEnabled -- If `true`, creates and uses RBAC resources required in the cluster with [Pod Security Policies](https://kubernetes.io/docs/concepts/policy/pod-security-policy/) enabled.
-  # Must be used with `rbac.create` set to `true`.
-  pspEnabled: false
-  # rbac.clusterScoped -- if set to false will only provision RBAC to alter resources in the current namespace. Most useful for Cluster-API
-  clusterScoped: true
   serviceAccount:
-    # rbac.serviceAccount.annotations -- Additional Service Account annotations.
-    annotations: {}
-    # rbac.serviceAccount.create -- If `true` and `rbac.create` is also true, a Service Account will be created.
     create: true
-    # rbac.serviceAccount.name -- The name of the ServiceAccount to use. If not set and create is `true`, a name is generated using the fullname template.
-    name: ""
-    # rbac.serviceAccount.automountServiceAccountToken -- Automount API credentials for a Service Account.
-    automountServiceAccountToken: true
+    name: cluster-autoscaler
+    annotations:
+      eks.amazonaws.com/role-arn: arn:aws:iam::385861399472:role/eks-cluster-autoscaler-role
 
 # replicaCount -- Desired number of pods
 replicaCount: 1
