@@ -3,7 +3,7 @@ pipeline {
     
     environment {
         GH_TOKEN = credentials('github-token') 
-        CHART_NAME = "csye7125"
+        CHART_NAME = "cluster-autoscaler"
         REPO_OWNER = 'cyse7125-su24-team15'
         REPO_NAME = 'helm-eks-autoscaler'
         NEW_VERSION = ''
