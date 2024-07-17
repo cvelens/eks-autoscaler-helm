@@ -38,7 +38,9 @@ pipeline {
                         sh 'git branch --set-upstream-to=origin/main'
                         sh 'git config user.email "challagulla.l@northeastern.edu"'
                         sh 'git config user.name "Lokesh C"'
+                        sh "echo ${newVersion}"
                         sh "npx release-it ${newVersion} --github.release --github.assets=${CHART_NAME}-${newVersion}.zip --no-git.requireCleanWorkingDir --github.publish"
+                        sh "echo ${newVersion}"
                         sh "git fetch --tags origin"
                         def latestTag = sh(script: "git tag --sort=-creatordate | grep -v ${newVersion} | head -n 1", returnStdout: true).trim()
                         echo "Latest Tag: ${latestTag}"                          
