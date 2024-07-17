@@ -1,2 +1,2 @@
 # helm-eks-autoscaler
-readme
+Testing release
