@@ -42,7 +42,7 @@ pipeline {
                         sh "npx release-it ${newVersion} --github.release --github.assets=${CHART_NAME}-${newVersion}.zip --no-git.requireCleanWorkingDir --github.publish"
                         sh "echo ${newVersion}"
                         sh "git fetch --tags origin"
-                        def latestTag = sh(script: "git tag --sort=-creatordate | grep -v ${newVersion} | head -n 1", returnStdout: true).trim()
+                        def latestTag = sh(script: "git tag --sort=-creatordate | grep -v \"v${newVersion}\" | head -n 1", returnStdout: true).trim()
                         echo "Latest Tag: ${latestTag}"                          
                         def commitMessages = sh(script: "git log ${latestTag}..HEAD --oneline", returnStdout: true).trim()
                         def escapedCommitMessages = sh(script: "echo \"${commitMessages}\" | jq -sR .", returnStdout: true).trim()
