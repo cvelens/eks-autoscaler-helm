@@ -48,7 +48,7 @@ pipeline {
                         def escapedCommitMessages = sh(script: "echo \"${commitMessages}\" | jq -sR .", returnStdout: true).trim()
                         def jsonPayload = """
                              {
-                            "tag_name": "${newVersion}",
+                            "tag_name": "${latestTag}",
                             "target_commitish": "main",
                             "name": "${newVersion}",
                             "body": ${escapedCommitMessages},
