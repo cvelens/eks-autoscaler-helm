@@ -83,7 +83,7 @@ pipeline {
                 script {
                     echo 'Running Helm lint and template'
                     try {
-                        def result = sh(script: 'helm lint charts/cluster-autoscaler && helm template charts/cluster-autoscaler', returnStatus: true)
+                        def result = sh(script: 'helm lint cluster-autoscaler && helm template cluster-autoscaler', returnStatus: true)
                         if (result != 0) {
                             updateGitHubStatus('helm-validate', 'failure', 'Helm validate check failed', env.PR_COMMIT_SHA)
                             error('Helm validate check failed!')
