@@ -170,6 +170,9 @@ expanderPriorities: {}
 # parameters and their default values.
 # Everything after the first _ will be ignored allowing the use of multi-string arguments.
 extraArgs:
+  scale-down-unneeded-time: 10m
+  scale-down-delay-after-add: 10m
+  scan-interval: 10s
   logtostderr: true
   stderrthreshold: info
   v: 4
@@ -302,23 +305,26 @@ prometheusRule:
   rules: []
 
 rbac:
+  create: true
   serviceAccount:
     create: true
     name: cluster-autoscaler
     annotations:
       eks.amazonaws.com/role-arn: arn:aws:iam::385861399472:role/eks-cluster-autoscaler-role
+  pspEnabled: false
+  clusterScoped: true
 
 # replicaCount -- Desired number of pods
 replicaCount: 1
 
 # resources -- Pod resource requests and limits.
-resources: {}
-  # limits:
-  #   cpu: 100m
-  #   memory: 300Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 300Mi
+resources: 
+  limits:
+    cpu: 100m
+    memory: 300Mi
+  requests:
+    cpu: 100m
+    memory: 300Mi
 
 # revisionHistoryLimit -- The number of revisions to keep.
 revisionHistoryLimit: 10
