@@ -30,9 +30,9 @@ pipeline {
                         if (!newVersion) {
                             error "Failed to extract new version"
                         }
-                        sh "sed -i 's/^version:.*/version: ${newVersion}/' charts/cluster-autoscaler/Chart.yaml"
-                        sh "cat charts/cluster-autoscaler/Chart.yaml"
-                        sh "helm package charts/cluster-autoscaler --destination ."
+                        sh "sed -i 's/^version:.*/version: ${newVersion}/' cluster-autoscaler/Chart.yaml"
+                        sh "cat cluster-autoscaler/Chart.yaml"
+                        sh "helm package cluster-autoscaler --destination ."
                         sh "zip ${CHART_NAME}-${newVersion}.zip ${CHART_NAME}-${newVersion}.tgz"
                         sh "echo ${newVersion}"
                         sh 'git branch --set-upstream-to=origin/main'
