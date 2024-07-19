@@ -1,6 +1,28 @@
 ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
 # affinity -- Affinity for pod assignment
-affinity: {}
+affinity:
+  podAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+    - weight: 100
+      podAffinityTerm:
+        labelSelector:
+          matchExpressions:
+          - key: app.kubernetes.io/name
+            operator: In
+            values:
+            - cluster-autoscaler
+        topologyKey: "topology.kubernetes.io/zone"
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+    - weight: 100
+      podAffinityTerm:
+        labelSelector:
+          matchExpressions:
+          - key: app.kubernetes.io/name
+            operator: In
+            values:
+            - cluster-autoscaler
+        topologyKey: "kubernetes.io/hostname"
 
 # additionalLabels -- Labels to add to each object of the chart.
 additionalLabels: {}
