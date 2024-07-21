@@ -91,7 +91,7 @@ pipeline {
                     withEnv(["GH_TOKEN=${env.GH_TOKEN}"]) {
                         echo "Latest tag ${newVersionImg}, path ${CHART_PATH}"
                         sh """
-                            yq e '.image.tag = "${newVersionImg}"' -i ${CHART_PATH}
+                            yq -y -i '.image.tag = "${newVersionImg}"' ${CHART_PATH}
                         """
                         def output = sh(script: 'npx semantic-release --dry-run --no-ci', returnStdout: true).trim()
                         echo output
