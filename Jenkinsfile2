@@ -6,9 +6,32 @@ pipeline {
         CHART_NAME = "cluster-autoscaler"
         REPO_OWNER = 'cyse7125-su24-team15'
         REPO_NAME = 'helm-eks-autoscaler'
+        DOCKERHUB_REPO = 'chlokesh1306/eks-cluster-autoscaler'
+        CHART_PATH = './cluster-autoscaler/values.yaml'
+        DOCKERHUB_CREDENTIALS_ID = 'dockerhub'
         NEW_VERSION = ''
     }
     
+        stages {
+        stage('Fetch tag and update the chart') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: env.DOCKERHUB_CREDENTIALS_ID, usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')]) {
+                        def latestTag = sh(
+                            script: """
+                                curl -s -u ${DOCKERHUB_USERNAME}:${DOCKERHUB_PASSWORD} 'https://hub.docker.com/v2/repositories/${env.DOCKERHUB_REPO}/tags/?page_size=1&page=1' | jq -r '.results[0].name'
+                            """,
+                            returnStdout: true
+                        ).trim()
+
+                        echo "Latest Docker Hub Tag: ${latestTag}"
+
+                        env.LATEST_TAG = latestTag
+                    }
+                }
+            }
+        }
+
     stages {
         stage('Clone Repository') {
             steps {
@@ -23,6 +46,10 @@ pipeline {
             steps {
                 script {
                     withEnv(["GH_TOKEN=${env.GH_TOKEN}"]) {
+                        echo "Latest tag ${env.LATEST_TAG}, path ${env.VALUES_PATH}"
+                        sh """
+                            yq eval '.image.tag = "${env.LATEST_TAG}"' -i ${env.VALUES_PATH}
+                        """
                         def output = sh(script: 'npx semantic-release --dry-run --no-ci', returnStdout: true).trim()
                         echo output
                         def newVersion = output.split('\n').find { it.contains('Release note for version') }?.replaceAll(/.*Release note for version (.*):.*/, '$1').trim()
@@ -85,5 +112,6 @@ pipeline {
                 }
             }
         }
+}
 }
 }

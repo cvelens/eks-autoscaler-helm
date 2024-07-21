@@ -1,0 +1,24 @@
+# Patterns to ignore when packaging Helm charts.
+
+# .helmignore
+# This file has the same syntax as .gitignore and .dockerignore.
+
+# Ignore Jenkins files
+Jenkinsfile
+jenkinsfile
+
+# Ignore Docker files
+Dockerfile
+.dockerignore
+
+# Ignore node_modules and logs
+node_modules
+npm-debug.log
+
+# Ignore git files
+.git
+.gitignore
+
+# Ignore other system files
+.DS_Store
+
