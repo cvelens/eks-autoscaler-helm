@@ -6,33 +6,76 @@ pipeline {
         CHART_NAME = "cluster-autoscaler"
         REPO_OWNER = 'cyse7125-su24-team15'
         REPO_NAME = 'helm-eks-autoscaler'
-        DOCKERHUB_REPO = 'chlokesh1306/eks-cluster-autoscaler'
         CHART_PATH = './cluster-autoscaler/values.yaml'
         DOCKERHUB_CREDENTIALS_ID = 'dockerhub'
+        DOCKERHUB_REPO = 'chlokesh1306/eks-cluster-autoscaler' 
+        VERSION_SCRIPT_PATH = '/usr/local/bin/get_next_version.sh'
+        GITHUB_CREDENTIALS_ID = 'github'
         NEW_VERSION = ''
     }
     
         stages {
-        stage('Fetch tag and update the chart') {
+    stage('Checkout') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: env.DOCKERHUB_CREDENTIALS_ID, usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')]) {
-                        def latestTag = sh(
-                            script: """
-                                curl -s -u ${DOCKERHUB_USERNAME}:${DOCKERHUB_PASSWORD} 'https://hub.docker.com/v2/repositories/${env.DOCKERHUB_REPO}/tags/?page_size=1&page=1' | jq -r '.results[0].name'
-                            """,
-                            returnStdout: true
-                        ).trim()
-
-                        echo "Latest Docker Hub Tag: ${latestTag}"
-
-                        env.LATEST_TAG = latestTag
+                    checkout scm
+                }
+            }
+        }
+        stage('Determine Version') {
+            when {
+                branch 'main'
+            }
+            steps {
+                withCredentials([usernamePassword(credentialsId: GITHUB_CREDENTIALS_ID, passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
+                    script {
+                        sh """
+                            git config --global credential.helper store
+                            echo "https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com" > ~/.git-credentials
+                            git config --global credential.helper 'cache --timeout=3600'
+                        """
+                        newVersionImg = sh(script: 'bash ${WORKSPACE}/get_next_version.sh', returnStdout: true).trim()
+                        echo "New Version: ${newVersionImg}"
+                    }
+                }
+            }
+        }
+        stage('Setup Docker and Build') {
+            when {
+                branch 'main'
+            }
+            steps {
+                script {
+                  docker.withRegistry('', env.DOCKERHUB_CREDENTIALS_ID) {
+                    sh 'docker run --rm --privileged multiarch/qemu-user-static --reset -p yes'
+                    sh 'docker buildx create --name eks-autoscaler --driver docker-container --use || docker buildx use eks-autoscaler'
+                    sh 'docker buildx inspect eks-autoscaler --bootstrap'
+                    sh """
+                        docker buildx build \
+                        --platform linux/amd64,linux/arm64 \
+                        -t ${DOCKERHUB_REPO}:${newVersionImg} \
+                        --push .
+                    """
+                }
+            }
+        }
+        }
+        stage('Tag and Push Version') {
+            when {
+                branch 'main'
+            }
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: env.GITHUB_CREDENTIALS_ID, passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
+                        sh """
+                            git tag ${newVersionImg}
+                            git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/cyse7125-su24-team15/helm-eks-autoscaler.git ${newVersionImg}
+                        """
                     }
                 }
             }
         }
 
-    stages {
         stage('Clone Repository') {
             steps {
                 script {
@@ -46,9 +89,9 @@ pipeline {
             steps {
                 script {
                     withEnv(["GH_TOKEN=${env.GH_TOKEN}"]) {
-                        echo "Latest tag ${env.LATEST_TAG}, path ${env.VALUES_PATH}"
+                        echo "Latest tag ${newVersionImg}, path ${CHART_PATH}"
                         sh """
-                            yq eval '.image.tag = "${env.LATEST_TAG}"' -i ${env.VALUES_PATH}
+                            yq eval '.image.tag = "${newVersionImg}"' -i ${CHART_PATH}
                         """
                         def output = sh(script: 'npx semantic-release --dry-run --no-ci', returnStdout: true).trim()
                         echo output
@@ -112,6 +155,5 @@ pipeline {
                 }
             }
         }
-}
 }
 }
