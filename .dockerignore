@@ -1,0 +1,19 @@
+# Ignore Helm charts
+helm/
+charts/
+templates/
+
+# Ignore Jenkins files
+Jenkinsfile
+jenkinsfile
+
+# Ignore node_modules and logs
+node_modules
+npm-debug.log
+
+# Ignore git files
+.git
+.gitignore
+
+# Ignore other system files
+.DS_Store
