@@ -12,6 +12,7 @@ pipeline {
         VERSION_SCRIPT_PATH = '/usr/local/bin/get_next_version.sh'
         GITHUB_CREDENTIALS_ID = 'github'
         NEW_VERSION = ''
+        newVersionImg = "1.30.0"
     }
     
         stages {
@@ -34,8 +35,6 @@ pipeline {
                             echo "https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com" > ~/.git-credentials
                             git config --global credential.helper 'cache --timeout=3600'
                         """
-                        newVersionImg = sh(script: 'bash ${WORKSPACE}/get_next_version.sh', returnStdout: true).trim()
-                        echo "New Version: ${newVersionImg}"
                     }
                 }
             }
@@ -89,10 +88,6 @@ pipeline {
             steps {
                 script {
                     withEnv(["GH_TOKEN=${env.GH_TOKEN}"]) {
-                        echo "Latest tag ${newVersionImg}, path ${CHART_PATH}"
-                        sh """
-                            yq -y -i '.image.tag = "${newVersionImg}"' ${CHART_PATH}
-                        """
                         def output = sh(script: 'npx semantic-release --dry-run --no-ci', returnStdout: true).trim()
                         echo output
                         def newVersion = output.split('\n').find { it.contains('Release note for version') }?.replaceAll(/.*Release note for version (.*):.*/, '$1').trim()
