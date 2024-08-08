@@ -429,3 +429,9 @@ vpa:
 
 # secretKeyRefNameOverride -- Overrides the name of the Secret to use when loading the secretKeyRef for AWS and Azure env variables
 secretKeyRefNameOverride: ""
+
+hpa:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
